@@ -1,13 +1,28 @@
 import Head from "next/head";
-import { useRouter } from "next/router";
 import AppLayout from "../components/AppLayout";
 import Image from "next/image";
 import { colors } from "@/styles/theme";
 import { Button } from "@/components/Button";
 import GitHub from "@/components/Icons/GitHub";
+import { loginWithGitHub, onAuthStateChanged } from "@/firebase/client";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-    const router = useRouter();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        onAuthStateChanged(setUser);
+    }, []);
+
+    const handleClick = () => {
+        loginWithGitHub()
+            .then((user) => {
+                setUser(user);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
     return (
         <>
@@ -29,10 +44,17 @@ export default function Home() {
                         Talk about development <br /> with developers. 👋
                     </h2>
                     <div>
-                        <Button>
-                            <GitHub fill='#fff' width={24} height={24}/>
-                            Login with GitHub    
-                        </Button>
+                        {user === null && (
+                            <Button onClick={handleClick}>
+                                <GitHub fill="#fff" width={24} height={24} />
+                                Login with GitHub
+                            </Button>
+                        )}
+                        {user && user.displayName && (
+                            <div>
+                                <p>{user.displayName}</p>
+                            </div>
+                        )}
                     </div>
                 </section>
             </AppLayout>
